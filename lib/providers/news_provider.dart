@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:week6/models/news_model.dart';
 import 'package:week6/services/api_news_service.dart';
@@ -23,7 +24,11 @@ class NewsProvider extends ChangeNotifier {
           .map((article) => NewsModel.fromJson(article))
           .toList();
     } catch (e) {
-      print('Error fetching news: $e');
+      if (e is DioException) {
+        print(e.error); // Print the error message from DioException
+      } else {
+        print('Unexpected error: $e');
+      }
       newsArticles = []; // Clear list on error
     } finally {
       isLoading = false;

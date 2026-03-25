@@ -30,7 +30,10 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
     final newsArticles = provider.newsArticles;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('News Listing')),
+      appBar: AppBar(
+        title: const Text('News Listing'),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : newsArticles.isEmpty

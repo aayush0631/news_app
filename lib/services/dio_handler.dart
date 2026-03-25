@@ -25,6 +25,30 @@ class DioHandler {
         responseBody: true,
       ),
     );
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (DioException e, handler) {
+          String errorDescription = '';
+          if (e.type == DioExceptionType.connectionTimeout) {
+            errorDescription = 'Connection timeout with API server';
+          } else if (e.type == DioExceptionType.receiveTimeout) {
+            errorDescription = 'Receive timeout in connection with API server';
+          } else if (e.type == DioExceptionType.badResponse) {
+            errorDescription = 'Received invalid status code: ${e.response?.statusCode}';
+          } else if (e.type == DioExceptionType.connectionError) {
+            errorDescription = 'Connection error with API server: ${e.message}';
+          }
+          else {
+            errorDescription = 'Unexpected error occurred: ${e.message}';
+          }
+          handler.reject(DioException(
+            requestOptions: e.requestOptions,
+            error: errorDescription,
+            type: e.type,
+          ));
+        },
+      ),
+    );
   }
 
   // Setup registers the DioHandler itself
@@ -38,4 +62,5 @@ class DioHandler {
       getIt.registerLazySingleton<NewsService>(() => NewsService());
     }
   }
+
 }
