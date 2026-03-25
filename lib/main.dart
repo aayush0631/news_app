@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:week4/routing/router.dart';
-import 'package:week4/routing/routes.dart';
+import 'package:week6/routing/router.dart';
+import 'package:week6/routing/routes.dart';
 import 'providers/news_provider.dart';
-
+import 'services/dio_handler.dart';
 
 void main() {
+  DioHandler.setup();
   runApp(
     ChangeNotifierProvider(create: (_) => NewsProvider(), child: const MyApp()),
   );

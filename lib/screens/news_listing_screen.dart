@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:week4/providers/news_provider.dart';
+import 'package:week6/providers/news_provider.dart';
 
 class NewsListingScreen extends StatefulWidget {
   const NewsListingScreen({super.key});
@@ -10,12 +10,18 @@ class NewsListingScreen extends StatefulWidget {
 }
 
 class _NewsListingScreenState extends State<NewsListingScreen> {
-  @override
+  late NewsProvider _provider;
+@override
   void initState() {
     super.initState();
-    print('init state called');
-    // ignore: use_build_context_synchronously
-    Future.microtask(() => context.read<NewsProvider>().fetchNews());
+    // Store provider reference before any async call
+    _provider = Provider.of<NewsProvider>(context, listen: false);
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    // No context used here; safe even if widget rebuilds
+    await _provider.fetchNews();
   }
 
   @override
@@ -26,22 +32,29 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('News Listing')),
       body: provider.isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : newsArticles.isEmpty
-        ? const Center(child: Text('No news articles available.'))
-        : ListView.builder(
-          itemCount: newsArticles.length,
-          itemBuilder: (context, index) {
-            final article = newsArticles[index];
-            return ListTile(
-              title: Text(article.title),
-              subtitle: Text(article.description),
-              onTap: () {
-                // Navigate to detail
+          ? const Center(child: CircularProgressIndicator())
+          : newsArticles.isEmpty
+          ? const Center(child: Text('No news articles available.'))
+          : ListView.builder(
+              itemCount: newsArticles.length,
+              itemBuilder: (context, index) {
+                final article = newsArticles[index];
+                return ListTile(
+                  title: Text(article.title),
+                  subtitle: Text(article.description),
+                  leading: Image.network(
+                    article.urlToImage,
+                    width: 100,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.broken_image),
+                  ),
+                  onTap: () {
+                    // Navigate to detail
+                  },
+                );
               },
-            );
-          },
-        ),
+            ),
     );
   }
 }
