@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'routes.dart';
-import '../screens/news_listing_screen.dart';
+import '../features/news/view/news_listing_page.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {

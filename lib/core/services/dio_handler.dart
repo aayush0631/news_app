@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'api_constants.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'api_news_service.dart';
+import '../../data/news_resources/api_news_service.dart';
 
 final getIt = GetIt.instance;
 

@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:week6/routing/router.dart';
 import 'package:week6/routing/routes.dart';
-import 'providers/news_provider.dart';
-import 'services/dio_handler.dart';
+import 'features/news/viewmodel/news_viewmodel.dart';
+import 'core/services/dio_handler.dart';
+import 'package:week6/features/bookmarks/viewmodel/booking_viewmodel.dart';
 
 void main() {
   DioHandler.setup();
   runApp(
-    ChangeNotifierProvider(create: (_) => NewsProvider(), child: const MyApp()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => BookmarkController()),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 

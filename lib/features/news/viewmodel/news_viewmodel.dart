@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:week6/models/news_model.dart';
-import 'package:week6/services/api_news_service.dart';
+import 'package:week6/core/models/news_model.dart';
+import 'package:week6/data/news_resources/api_news_service.dart';
 import 'package:get_it/get_it.dart';
 
 final getit = GetIt.instance;
@@ -19,7 +19,7 @@ class NewsProvider extends ChangeNotifier {
     isLoading = true;
     notifyListeners(); // Notify UI to show loading
     try {
-      final articles = await newsService.fetchTopHeadlines(query: query);
+      final articles = await newsService.fetchNews(query: query);
       newsArticles = articles
           .map((article) => NewsModel.fromJson(article))
           .toList();
@@ -40,5 +40,10 @@ class NewsProvider extends ChangeNotifier {
   void updateQuery(String newQuery) {
     query = newQuery;
     fetchNews(query: query);
+  }
+
+  void toggleBookmark(NewsModel article) {
+    article.toggleBookmark();
+    notifyListeners(); // Notify UI to update bookmark status
   }
 }
