@@ -5,7 +5,7 @@ import 'package:week6/routing/routes.dart';
 import 'features/news/viewmodel/news_viewmodel.dart';
 import 'core/services/dio_handler.dart';
 import 'package:week6/features/bookmarks/viewmodel/booking_viewmodel.dart';
-
+import 'core/viewmodel/theme_viewmodel.dart';
 void main() {
   DioHandler.setup();
   runApp(
@@ -13,6 +13,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => NewsProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkController()),
+        ChangeNotifierProvider(create: (_) => ThemeViewmodel()..loadTheme()),
       ],
       child: const MyApp(),
     ),
@@ -26,7 +27,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter News App',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: context.watch<ThemeViewmodel>().isDarkMode
+          ? ThemeData.dark()
+          : ThemeData.light(),
       initialRoute: Routes.home,
       onGenerateRoute: (settings) => AppRouter.generateRoute(settings),
     );

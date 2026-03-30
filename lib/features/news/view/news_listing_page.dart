@@ -5,6 +5,7 @@ import 'package:week6/features/bookmarks/viewmodel/booking_viewmodel.dart';
 import 'package:week6/core/models/bookmarked_news.dart';
 import 'package:week6/core/widgets/app_bottom_bar.dart';
 import 'package:week6/features/bookmarks/view/booking_list_page.dart';
+import 'package:week6/core/viewmodel/theme_viewmodel.dart';
 
 class NewsListingScreen extends StatefulWidget {
   const NewsListingScreen({super.key});
@@ -24,14 +25,8 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
   @override
   void initState() {
     super.initState();
-
     _provider = Provider.of<NewsProvider>(context, listen: false);
-
-    pages = [
-      const _NewsListBody(),
-      const BookmarkListPage(),
-    ];
-
+    pages = [const _NewsListBody(), const BookmarkListPage()];
     _fetchData();
   }
 
@@ -42,12 +37,22 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<NewsProvider>();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('News Listing'),
+        title: const Text('News Listings'),
         backgroundColor: Colors.blueAccent,
         actions: [
+          IconButton(
+            onPressed: () async {
+              context.read<ThemeViewmodel>().toggleTheme();
+            },
+            icon: Icon(
+              context.watch<ThemeViewmodel>().isDarkMode
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+          ),
+
           /// Refresh
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -65,23 +70,19 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
               final query = controller.value.text.toLowerCase();
 
               final suggestions = provider.newsArticles
-                  .where((article) =>
-                      article.title.toLowerCase().contains(query))
+                  .where(
+                    (article) => article.title.toLowerCase().contains(query),
+                  )
                   .map(
-                    (article) => ListTile(
-                      title: Text(article.title),
-                      onTap: () {},
-                    ),
+                    (article) =>
+                        ListTile(title: Text(article.title), onTap: () {}),
                   )
                   .toList();
-
               return suggestions;
             },
           ),
         ],
       ),
-
-      /// 🔥 THIS IS THE MAIN CHANGE
       body: pages[_currentIndex],
 
       /// Bottom Navigation
@@ -95,10 +96,6 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
   }
 }
 
-
-/// ==========================
-/// NEWS LIST BODY
-/// ==========================
 class _NewsListBody extends StatelessWidget {
   const _NewsListBody();
 
@@ -111,6 +108,10 @@ class _NewsListBody extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
+    if (provider.errorMessage != null && provider.errorMessage!.isNotEmpty) {
+      return Center(child: Text(provider.errorMessage!));
+    }
+
     if (provider.newsArticles.isEmpty) {
       return const Center(child: Text('No news articles available.'));
     }
@@ -120,8 +121,7 @@ class _NewsListBody extends StatelessWidget {
       itemBuilder: (context, index) {
         final article = provider.newsArticles[index];
 
-        final isBookmarked =
-            bookmarkController.isBookmarked(article.url);
+        final isBookmarked = bookmarkController.isBookmarked(article.url);
 
         return ListTile(
           title: Text(article.title),
@@ -131,8 +131,7 @@ class _NewsListBody extends StatelessWidget {
             article.urlToImage,
             width: 100,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                const Icon(Icons.broken_image),
+            errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
           ),
 
           trailing: IconButton(
@@ -151,15 +150,12 @@ class _NewsListBody extends StatelessWidget {
               }
             },
             icon: Icon(
-              isBookmarked
-                  ? Icons.bookmark
-                  : Icons.bookmark_border,
+              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
               color: isBookmarked ? Colors.blue : null,
             ),
           ),
-
           onTap: () {
-            // Navigate to detail if needed
+            // Optional: Open article detail page or webview
           },
         );
       },
