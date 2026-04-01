@@ -12,6 +12,9 @@ class NewsProvider extends ChangeNotifier {
   String? errorMessage;
   String query = '';
 
+  int _currentIndex = 0;
+  int get currentIndex => _currentIndex;
+
   final NewsRepository repository = getIt<NewsRepository>();
 
   Future<void> fetchNews({String? query}) async {
@@ -39,8 +42,16 @@ class NewsProvider extends ChangeNotifier {
     fetchNews(query: query);
   }
 
-  void toggleBookmark(NewsModel article) {
-    article.toggleBookmark();
+  /// 🔥 Search logic moved here
+  List<NewsModel> getFilteredArticles(String query) {
+    return newsArticles
+        .where((article) =>
+            article.title.toLowerCase().contains(query))
+        .toList();
+  }
+
+  void updateCurrentIndex(int index) {
+    _currentIndex = index;
     notifyListeners();
   }
 }

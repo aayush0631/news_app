@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:week6/features/news/viewmodel/news_viewmodel.dart';
-import 'package:week6/features/bookmarks/viewmodel/booking_viewmodel.dart';
-import 'package:week6/core/models/bookmarked_news.dart';
 import 'package:week6/core/widgets/app_bottom_bar.dart';
 import 'package:week6/features/bookmarks/view/booking_list_page.dart';
 import 'package:week6/core/viewmodel/theme_viewmodel.dart';
+import 'package:week6/features/bookmarks/viewmodel/booking_viewmodel.dart';
+import 'package:week6/core/models/bookmarked_news.dart';
 
 class NewsListingScreen extends StatefulWidget {
   const NewsListingScreen({super.key});
@@ -15,35 +15,30 @@ class NewsListingScreen extends StatefulWidget {
 }
 
 class _NewsListingScreenState extends State<NewsListingScreen> {
-  late NewsProvider _provider;
   final SearchController _searchController = SearchController();
-
-  int _currentIndex = 0;
-
-  late final List<Widget> pages;
 
   @override
   void initState() {
     super.initState();
-    _provider = Provider.of<NewsProvider>(context, listen: false);
-    pages = [const _NewsListBody(), const BookmarkListPage()];
-    _fetchData();
-  }
-
-  Future<void> _fetchData() async {
-    await _provider.fetchNews();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NewsProvider>().fetchNews();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<NewsProvider>();
+
+    final pages = [const NewsListBody(), const BookmarkListPage()];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('News Listings'),
         backgroundColor: Colors.blueAccent,
         actions: [
+          /// Theme Toggle
           IconButton(
-            onPressed: () async {
+            onPressed: () {
               context.read<ThemeViewmodel>().toggleTheme();
             },
             icon: Icon(
@@ -56,7 +51,7 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
           /// Refresh
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => provider.fetchNews(),
+            onPressed: provider.fetchNews,
           ),
 
           /// Search
@@ -69,35 +64,34 @@ class _NewsListingScreenState extends State<NewsListingScreen> {
             suggestionsBuilder: (context, controller) {
               final query = controller.value.text.toLowerCase();
 
-              final suggestions = provider.newsArticles
-                  .where(
-                    (article) => article.title.toLowerCase().contains(query),
-                  )
+              final suggestions = provider
+                  .getFilteredArticles(query)
                   .map(
                     (article) =>
                         ListTile(title: Text(article.title), onTap: () {}),
                   )
                   .toList();
-              return suggestions;
+
+              return suggestions.isEmpty
+                  ? const [ListTile(title: Text('No results found'))]
+                  : suggestions;
             },
           ),
         ],
       ),
-      body: pages[_currentIndex],
 
-      /// Bottom Navigation
+      body: pages[provider.currentIndex],
+
       bottomNavigationBar: AppBottomBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
+        currentIndex: provider.currentIndex,
+        onTap: provider.updateCurrentIndex,
       ),
     );
   }
 }
 
-class _NewsListBody extends StatelessWidget {
-  const _NewsListBody();
+class NewsListBody extends StatelessWidget {
+  const NewsListBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +114,6 @@ class _NewsListBody extends StatelessWidget {
       itemCount: provider.newsArticles.length,
       itemBuilder: (context, index) {
         final article = provider.newsArticles[index];
-
         final isBookmarked = bookmarkController.isBookmarked(article.url);
 
         return ListTile(
@@ -154,9 +147,6 @@ class _NewsListBody extends StatelessWidget {
               color: isBookmarked ? Colors.blue : null,
             ),
           ),
-          onTap: () {
-            // Optional: Open article detail page or webview
-          },
         );
       },
     );
